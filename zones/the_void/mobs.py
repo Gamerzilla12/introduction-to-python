@@ -42,7 +42,7 @@ TEMPLATES: dict[str, dict] = {
         "stats":    [60, 65, 60, 80, 70, 75],
         "aggro":    False,
         "wander":   True,
-
+    },
         "my_friend": {
         "name":             "a wandering student",
         "key_words":        ("student", "wandering"),
