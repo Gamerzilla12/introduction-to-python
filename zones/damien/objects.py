@@ -22,12 +22,12 @@ TEMPLATES: dict[str, dict] = {
         "description":      "A forest green low-scent dry-erase marker, about half used.",
     },
 
-    "silken_sack": {
+    "sack_of_darkness": {
         "spawn_as":         Item,
-        "name":             "a &+rtattered &+csilken sack&N",
-        "key_words":        ("tattered", "silken", "sack"),
-        "room_description": "A &+rtattered &+csilken sack&N lies here, discarded.",
-        "description":      "This sack seems to be in an awful condition.",
+        "name":             "a sack of darkness",
+        "key_words":        ("darkness", "sack"),
+        "room_description": "A plain looking sack lies on the ground.",
+        "description":      "The bag looks simple. It is a brown canvas. When you look inside you see a black void.",
         "weight":           2,
     },
     "windsong" : {
