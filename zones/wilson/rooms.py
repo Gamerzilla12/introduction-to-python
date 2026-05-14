@@ -33,7 +33,7 @@ ROOMS: dict[int, Room] = {
             "objects": [
                 O.spawn("Nuke shot"),
             ],
-            "mobs": [M."George Washington"],  # two independent students
+            "mobs": [M.spawn("George Washington")],  # two independent students
         }
     ),
 }
