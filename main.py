@@ -25,6 +25,7 @@ from ashenmoor.engine import GameState
 #   from zones.dungeon   import ZONE as DUNGEON
 
 #from zones.the_void import ZONE as THE_VOID
+from zones.timothy import ZONE as TIMOTHY
 from zones.asher import ZONE as ASHER
 from zones.gabe import ZONE as GABE
 from zones.the_void import ZONE as THE_VOID
@@ -64,6 +65,8 @@ def main():
     state.load_world({}, characters, locations, player="Moted")
 
     # Load zones — rooms, object templates, and mob templates all merge in
+    #state.load_zone(THE_VOID)
+    state.load_zone(TIMOTHY)
     state.load_zone(THE_VOID)
     state.load_zone(Charlotte)
     #state.load_zone(THE_VOID)
