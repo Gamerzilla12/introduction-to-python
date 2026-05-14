@@ -29,7 +29,7 @@ TEMPLATES: dict[str, dict] = {
         'room_description': "&+gA rusty karambit knife that is a reddish color and folds.&N",
         'description': """&+gIts blade is made of a crystalline structure that has been carefully molded
 &+git has a weird glow whenever danger is near
-&+gor just a monster&N""",
+&+gor it does it randomly&N""",
         "weight":           1,
         "dice":             "2d8",
         "hitroll":          2,
