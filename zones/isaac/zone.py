@@ -1,3 +1,2 @@
-number = 9
 name=""
 author=""
