@@ -1,1 +1,3 @@
 number = myNumber
+name=""
+author=""
