@@ -156,7 +156,7 @@ TEMPLATES: dict[str, dict] = {
      "Cap": {
         "name": "Cap" ,
         "key_words": ("cap", "spirit"),
-        "room_description": "looks like you found a stowaway",
+        "room_description": "you found a &MC&ma&Mp&N! a little spirit with &Mpink&N body and big round eyes\nIt stares at you",
         "description": (
             "Caps are little spirits that like hiding in chests"
         ),
@@ -168,7 +168,7 @@ TEMPLATES: dict[str, dict] = {
         "wander": False,
         "killable": True,
         "responses": {
-            "hi": ("The Cap looks at you with big wide eyes, &Mmagenta&N body with tiny little wings.",
+            "hi": ("The Cap looks at you with big wide eyes, it has a &Mpink&N body with tiny little wings.",
                    "'squeek!'"),
             "loser": ("it cries softly at you calling it a crude name"),
         },
