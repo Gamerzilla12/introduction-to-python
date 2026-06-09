@@ -50,6 +50,16 @@ TEMPLATES: dict[str, dict] = {
     "is_open":            True, 
     },
 
+     "&WSilver Key": {
+        "spawn_as":        Item,
+        "name":            "&ya silver key&N",
+        "key_words":       ("key", "silver", "small"),
+        "room_description":"A small &Wsilver key&N lies here.",
+        "is_key":          True,
+        "key_name":        "silver key", 
+        "weight":          0.2,
+    },
+
     "Spruce Chest": {
         "spawn_as":        Container,
         "name":            "Spruce Chest",
@@ -57,24 +67,38 @@ TEMPLATES: dict[str, dict] = {
         "room_description": "A sturdy spruce chest lies here unopened.",
         "no_take":         True,       
         "is_open":         False,      
-        "locked":          False,      
-        "key_name":        "chest key",
+        "locked":          True,      
+        "key_name":        "silver key",
         "capacity":        50.0,
         "weight":          20.0,
         "contents": [    
          "Copper Sword",
             "Gold Nugget", "Gold Nugget", "Gold Nugget", "Gold Nugget",
             "Gold Nugget", "Gold Nugget", "Gold Nugget", "Gold Nugget",
+            "Emerald Clump", "Emerald Clump", "Emerald Clump",
+            "Illrigger Mage Robe"
         ],
     },
    
     "Gold Nugget": {
     "spawn_as":  Item,
     "name":      "&YGold Nuggets&N",
-    "room_description": "&YGold Nuggets&N shimmer against the light",
+    "room_description": "&Ygold nuggets&N shimmer against the light",
     "key_words": ("loot", "gold", "nuggets"),
     "wear_on":   None,
-    "weight":    0.1,
+    "weight":    0.5,
+    "cost":      500,
+    "stat_mods": {},
+    "save_mods": {},
+    },
+   
+    "Emerald Clump": {
+    "spawn_as":  Item,
+    "name":      "&GEmerald Clump&N",
+    "room_description": "an &Gemerald clump&N shimmer against the light",
+    "key_words": ("loot", "emerald", "clump"),
+    "wear_on":   None,
+    "weight":    0.3,
     "cost":      500,
     "stat_mods": {},
     "save_mods": {},

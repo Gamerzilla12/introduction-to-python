@@ -11,6 +11,10 @@ copies in rooms as you like, each is independent.
 from ashenmoor.world import Mob
 from ashenmoor.world.zone import make_spawner
 
+def _cap_follow_(state, char, mob):
+    state.follow[char.name] = mob
+    return f"{mob.name}wants to follow you!"
+
 TEMPLATES: dict[str, dict] = {
     "&MIllrigger Mage&N": {
         "name": "Illrigger",
@@ -130,7 +134,7 @@ TEMPLATES: dict[str, dict] = {
         ),
         "race": "Unknown",
         "class": "Unknown",
-        "level": 89,
+        "level": 69,
         "stats": [78, 45, 98, 69, 78, 0],
         "aggro": True,
         "wander": True,
@@ -156,7 +160,7 @@ TEMPLATES: dict[str, dict] = {
      "Cap": {
         "name": "Cap" ,
         "key_words": ("cap", "spirit"),
-        "room_description": "you found a &MC&ma&Mp&N! a little spirit with &Mpink&N body and big round eyes\nIt stares at you",
+        "room_description": "you found a &MC&ma&Mp&N! a little spirit with &Mpink&N body and big round eyes, its little horn on its forhead &ws&Wh&wi&Wm&wm&We&wr&Ws&N slightly\nIt stares at you",
         "description": (
             "Caps are little spirits that like hiding in chests"
         ),
@@ -168,8 +172,7 @@ TEMPLATES: dict[str, dict] = {
         "wander": False,
         "killable": True,
         "responses": {
-            "hi": ("The Cap looks at you with big wide eyes, it has a &Mpink&N body with tiny little wings.",
-                   "'squeek!'"),
+            "hi": _cap_follow_,
             "loser": ("it cries softly at you calling it a crude name"),
         },
     },

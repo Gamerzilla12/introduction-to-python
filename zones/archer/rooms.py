@@ -42,7 +42,7 @@ ROOMS: dict[int, Room] = {
             {
                 "number": 2,
                 "name": "&xW&yo&xo&yd&xl&xa&yn&xd&N Manor Chest Room (entrance)",
-                "description": "A giant room full of chests filled with treasures beyond your wildest dreams /nIt is guarded by an &RIllrigger&N",
+                "description": "A giant room full of chests filled with treasures beyond your wildest dreams\nIt is guarded by an &RIllrigger&N",
                 "indoors": True,
                 "terrain": "floors, rooms, stairs, hallways, ceiling, and walls",
                 "exits": [
@@ -248,6 +248,9 @@ ROOMS: dict[int, Room] = {
                     M.spawn("&GGreen Slime&N"),
                     M.spawn("&GGreen Slime&N"),
                 ],
+                "objects": [
+                    O.spawn("&WSilver Key")
+                ],
             }
         ),
         15: Room(
@@ -273,7 +276,7 @@ ROOMS: dict[int, Room] = {
             {
                 "number": 16,
                 "name": "&xW&yo&xo&yd&xl&xa&yn&xd&N Manor Chest Room",
-                "description": "A giant room full of chests filled with treasures beyond your wildest dreams /nIt is guarded by an &RIllrigger&N",
+                "description": "A giant room full of chests filled with treasures beyond your wildest dreams\nIt is guarded by an &RIllrigger&N",
                 "indoors": True,
                 "terrain": "floors, rooms, stairs, hallways, ceiling, and walls",
                 "exits": [
