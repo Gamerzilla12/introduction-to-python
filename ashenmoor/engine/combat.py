@@ -33,6 +33,69 @@ MISS = 0
 HIT  = 1
 CRIT = 2
 
+# ── Size system ───────────────────────────────────────────────────────────────
+#
+# Ordered from smallest to largest. Index difference drives bash eligibility
+# and the STR contest advantage/disadvantage.
+#
+#   Bash range:  |attacker_size - target_size| <= 1
+#   Contest mod: (attacker_size - target_size) * 2  added to attacker's roll
+#                (before ×5, so each step = ±10 on the final score)
+#
+#   Medium(3) vs Small(2):  +2 to attacker roll  → +10 score  (advantage)
+#   Medium(3) vs Large(4):  -2 to attacker roll  → -10 score  (disadvantage)
+
+SIZES: list[str] = [
+    "Fine",        # 0
+    "Tiny",        # 1
+    "Small",       # 2
+    "Medium",      # 3
+    "Large",       # 4
+    "Huge",        # 5
+    "Gargantuan",  # 6
+]
+
+_SIZE_INDEX: dict[str, int] = {s: i for i, s in enumerate(SIZES)}
+_DEFAULT_SIZE = "Medium"
+
+
+def get_size(entity) -> str:
+    """
+    Return the size string for any character or mob.
+
+    Looks up the entity's race in its _races dict, falls back to Medium.
+    Also checks a direct 'size' attribute (mobs can set this in their template).
+    """
+    # Direct override on the entity (e.g. mob template sets "size")
+    direct = getattr(entity, "size", None)
+    if direct and direct in _SIZE_INDEX:
+        return direct
+
+    race_name = getattr(entity, "race", None)
+    races     = getattr(entity, "_races", {})
+    race_obj  = races.get(race_name) if races else None
+    if race_obj:
+        s = getattr(race_obj, "size", _DEFAULT_SIZE)
+        return s if s in _SIZE_INDEX else _DEFAULT_SIZE
+    return _DEFAULT_SIZE
+
+
+def size_index(entity) -> int:
+    return _SIZE_INDEX.get(get_size(entity), 3)
+
+
+def bash_size_mod(attacker, defender) -> int:
+    """
+    Raw modifier added to the attacker's d20 roll in the bash STR contest.
+    Each size step = +2 (bigger attacker) or -2 (smaller attacker).
+    """
+    return (size_index(attacker) - size_index(defender)) * 2
+
+
+def bash_size_eligible(attacker, defender) -> bool:
+    """True if the size difference allows a bash (within 1 step either way)."""
+    return abs(size_index(attacker) - size_index(defender)) <= 1
+
 # ── HP helpers ────────────────────────────────────────────────────────────────
 
 def compute_max_hp(char) -> int:
@@ -386,6 +449,9 @@ def one_attack(attacker, defender) -> tuple[int, int, str]:
     Resolve one attack swing.
     Attack score = (d20 + ability_modifier) × 5
     Hit if attack_score ≥ target AC (0-100)
+
+    Position penalty: attacker who is kneeling/sitting/reclined takes
+    -10 to their attack score (their footing is compromised).
     """
     from ..dnd.armor import get_ac
 
@@ -414,6 +480,12 @@ def one_attack(attacker, defender) -> tuple[int, int, str]:
     att_mod = _attack_mod(attacker)
     # Apply hit penalty debuff (from disarm)
     att_mod -= debuffs.get("hit_penalty", 0)
+
+    # Position penalty — compromised footing hurts attack accuracy
+    _PRONE_POSITIONS = {"kneeling", "sitting", "reclined"}
+    if getattr(attacker, "position", "standing") in _PRONE_POSITIONS:
+        att_mod -= 2   # -10 to attack score after ×5
+
     attack_score = (roll + att_mod) * 5
 
     if attack_score < ac:

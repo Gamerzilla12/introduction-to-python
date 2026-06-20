@@ -37,7 +37,7 @@ TEMPLATES: dict[str, dict] = {
         "contents": [                  # template keys — spawned automatically
            "windsong", "windsong",
             "cap", "visor", "armor", "cloak", "belt", "vambraces", "gloves", "leggings", "boots",
-           "dimensional_vault",
+           "dimensional_vault", "tower_shield",
            "stoneskin_scroll", "stoneskin_scroll", "stoneskin_scroll", "stoneskin_scroll", 
            "stoneskin_scroll", "stoneskin_scroll", "stoneskin_scroll" 
         ],
@@ -60,17 +60,23 @@ TEMPLATES: dict[str, dict] = {
     "room_description":"A potion of health lies here.",
     "effect":  "heal",
     "heal_pct": 0.5,
-},
-#{
-#    "type": "Potion",
-#    "name": "a potion of fortitude",
-#    "effects": [
-#        {"effect": "heal",           "heal_pct": 0.4},
-#        {"effect": "apply_barkskin", "duration": 8},
-#        {"effect": "apply_stoneskin","duration": 8},
-#    ],
-#}
-
+   },
+   "tower_shield": {
+      "spawn_as":         Item,
+      "name":             "&wa battered &Wtower shield&N",
+      "key_words":        ("tower", "shield", "battered"),
+      "room_description": "&wA battered tower shield leans against the wall here.&N",
+      "description": (
+        "A full-body tower shield of heavy iron-banded oak, scarred from "
+        "countless blows.\nIts sheer mass makes it brutal for bashing."
+      ),
+      "wear_on":   "secondary_hand",
+      "is_shield": True,
+      "ac_bonus":  18,
+      "weight":    40.0,
+      "stat_mods": {},
+      "save_mods": {"par": 2},
+   },
 
     "silken_sack": {
         "spawn_as":         Container,

@@ -72,7 +72,7 @@ TEMPLATES: dict[str, dict] = {
     "ethereal_shield": {
         "spawn_as": Item,
         "name": "an &me&N&Mt&N&mh&N&Me&N&mr&N&Me&N&ma&N&Ml&N &ms&N&Mh&N&mi&N&Me&N&ml&N&Md&N",
-        "key_words": ("shield"),
+        "key_words": ("ethereal", "shield"),
         "room_description": "A shield rests here.",
         "description": "An interesting shield made of &Xdark colored wood&N and &ma purple dragon head&N drawn on it.",
         "wear_on": "secondary_hand",
@@ -283,7 +283,7 @@ TEMPLATES: dict[str, dict] = {
     "ethereal_sack": {
         "spawn_as":            Container,
         "name":                "an &me&N&Mt&N&mh&N&Me&N&mr&N&Me&N&ma&N &ms&N&Ma&N&mc&N&Mk&N",
-        "key_words":           ("ethereal", "vault"),
+        "key_words":           ("ethereal", "sack"),
         "room_description":    "A sack lies on the ground.",
         "description":         "A pale sack that seems to be woven from beams of moonlight.",
         "capacity":            1000.0,

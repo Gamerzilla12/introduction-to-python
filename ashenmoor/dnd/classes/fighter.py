@@ -77,6 +77,7 @@ EXTRA_ATK4_LEVEL = 50
 INDOMITABLE_LEVEL = 23
 INDOMITABLE3_LEVEL = 33
 ACTION_SURGE2_LEVEL = 43
+BASH_LEVEL = 5          # game level where shield bash unlocks
 
 # ── Proficiency bonus ──────────────────────────────────────────────────────────
 
@@ -386,6 +387,16 @@ FIGHTER_POWERS: list[dict] = [
         "effect":      "indomitable",
         "user_msg":    "&+YYour indomitable will hardens your defenses!&N",
         "room_msg":    "&+Y{name}'s form seems to harden, becoming harder to strike!&N",
+    },
+
+    {
+        "keywords":       ("bash", "ba"),
+        "name":           "Shield Bash",
+        "effect":         "bash",
+        "cooldown_ticks": 5,
+        "level_required": BASH_LEVEL,
+        "user_msg":       "",   # built dynamically with target name
+        "room_msg":       "",   # built dynamically
     },
 
 ]

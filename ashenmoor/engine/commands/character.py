@@ -185,6 +185,15 @@ def cmd_attributes(state) -> str:
         }
         parry_str = f"\n&wCombat stance:&N {stance_labels.get(stance, stance)}"
 
+        # Bash size range info
+        if cclass in ("fighter", "warrior") and char.level >= 5:
+            from ...engine.combat import SIZES, size_index
+            si = size_index(char)
+            bashable = [SIZES[i] for i in range(max(0, si-1), min(len(SIZES), si+2))]
+            parry_str += (
+                f"  &x(bash range: {', '.join(bashable)})&N"
+            )
+
         # Shield block line
         if cclass in ("fighter", "warrior"):
             if char.level >= SHIELD_BLOCK_LEVEL:
@@ -329,7 +338,7 @@ def cmd_powers(state) -> str:
     # ── Base Fighter powers ───────────────────────────────────────────────
     lines.append("&wBase Fighter&N")
 
-    base_effects = {"second_wind", "action_surge", "indomitable"}
+    base_effects = {"second_wind", "action_surge", "indomitable", "bash"}
     base_powers  = [p for p in all_powers if p.get("effect") in base_effects]
     other_powers = [p for p in all_powers if p.get("effect") not in base_effects
                     and not p.get("_slot")]
@@ -373,6 +382,31 @@ def _fmt_power(p, now, dnd, tick_interval, slot_labels, state) -> str:
             status = "&Garmed — waiting for parry&N"
         else:
             status = "&Gready&N"
+
+    # ── Shield Bash — level gate + stance + recovery check ───────────────
+    elif effect == "bash":
+        from ...dnd.classes.fighter import BASH_LEVEL
+        char = state.characters.get(state.player)
+        if char and char.level < BASH_LEVEL:
+            remaining = BASH_LEVEL - char.level
+            status = (
+                f"&xUnlocks at level {BASH_LEVEL} "
+                f"({remaining} level{'s' if remaining != 1 else ''} away)&N"
+            )
+        else:
+            from ...engine.combat import get_combat_stance
+            stance   = get_combat_stance(char) if char else "standard"
+            char_dnd = getattr(char, "dnd", {}) or {} if char else {}
+            ready_at = state._power_cooldowns.get(pkey, 0)
+            if char_dnd.get("bash_recovery_ticks", 0) > 0:
+                status = "&xrecovering — auto-attacks only this tick&N"
+            elif now < ready_at:
+                rem    = (ready_at - now) / tick_interval
+                status = f"&R{rem:.1f} ticks&N"
+            elif stance != "shield":
+                status = "&xRequires shield equipped&N"
+            else:
+                status = "&Gready&N"
 
     # ── Charge-based powers ───────────────────────────────────────────────
     elif p.get("charges_key"):

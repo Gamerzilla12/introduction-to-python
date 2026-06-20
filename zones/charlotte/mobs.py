@@ -88,7 +88,38 @@ TEMPLATES: dict[str, dict] = {
         "killable": True,
         
     },
-    
+     "king zombie": {
+        "name": "King Zombie",
+        "key_words": ("Zom","Zombie","z","king"),
+        "room_description": "The King Zombie stands here ready to fight.",
+        "description": (
+            "The king Zomnie is lord over zombies and has the power to control all zombies.\n"
+        ),
+        "race": "Zombie",
+        "class": "Warrior",
+        "level":  70,
+        "stats": [60, 65, 60, 80, 70, 75],
+        "aggro": True,
+        "wander": False,
+        "killable": True,
+        
+    },
+    "Evil weiner dog": {
+        "name": "Leroy",
+        "key_words": ("roy","le","leroy"),
+        "room_description": "The Leroy stands here ready to fight.",
+        "description": (
+            "The Leroy is a evil weiner dog and might eat you alive.\n"
+        ),
+        "race": "dachsund",
+        "class": "Weiner dog",
+        "level":  100,
+        "stats": [60, 65, 60, 80, 70, 75],
+        "aggro": True,
+        "wander": True,
+        "killable": True,
+        
+    },
 }
 # Module-level spawn — rooms.py calls  M.spawn("void_guardian")
 spawn = make_spawner(TEMPLATES, lambda: Mob)

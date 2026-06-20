@@ -432,6 +432,11 @@ class GameState:
         hp_status_line: str | None = None
 
         dnd_state  = getattr(player, "dnd", {}) or {}
+
+        # ── Decrement bash recovery counter ───────────────────────────────
+        if dnd_state.get("bash_recovery_ticks", 0) > 0:
+            dnd_state["bash_recovery_ticks"] -= 1
+
         extra_atks = 0
         surge_msg  = None
         if dnd_state.get("action_surge_active"):
@@ -461,6 +466,25 @@ class GameState:
             if not mob.is_alive() or player.hp <= 0:
                 continue
             ensure_hp(mob)
+
+            # ── Bash stun: mob is stunned, decrement counter ──────────────
+            stun = getattr(mob, "bash_stun_ticks", 0)
+            if stun > 0:
+                mob.bash_stun_ticks = stun - 1
+                stun_msg = (
+                    f"&+Y{mob.name}&w is stunned and struggles to rise!&N"
+                    if stun > 1 else
+                    f"&+Y{mob.name}&w shakes its head and staggers to its feet!&N"
+                )
+                if mob.bash_stun_ticks == 0:
+                    mob.position = "standing"
+                player_msgs.append(stun_msg)
+                room_msgs.append(stun_msg)
+                _, fx_room = _tick_fx(mob)
+                player_msgs.extend(fx_room)
+                room_msgs.extend(fx_room)
+                continue   # stunned mob skips its counter-attack
+
             c_player, c_room = mob_counter_attacks(mob, player)
             player_msgs.extend(personalize_msg(m, player.name) for m in c_player)
             room_msgs.extend(c_room)
@@ -727,6 +751,24 @@ class GameState:
         if not char:
             return None
 
+        # ── Bash recovery lag ─────────────────────────────────────────────
+        # During the tick after a bash, only auto-attacks fire. Any typed
+        # power returns a "lag" message so the player feels the recovery cost.
+        dnd_lag = getattr(char, "dnd", {}) or {}
+        if dnd_lag.get("bash_recovery_ticks", 0) > 0:
+            # Check if this verb is a power — if so, eat it with a lag msg
+            all_powers_lag = _collect_tagged_powers(char)
+            lag_match = next((
+                p for p in all_powers_lag
+                if verb in (k.lower() for k in (
+                    (p["keywords"],) if isinstance(p.get("keywords"), str)
+                    else p.get("keywords", ())
+                ))
+            ), None)
+            if lag_match:
+                return "&xYou are still recovering from the bash — only auto-attacks this round.&N"
+            return None   # not a power, pass through to normal commands
+
         all_powers = _collect_tagged_powers(char)
         matches = [
             p for p in all_powers
@@ -741,6 +783,13 @@ class GameState:
         now = time.monotonic()
         for power in matches:
             pkey = _power_key(power)
+            # Level gate check
+            level_req = power.get("level_required", 0)
+            if level_req and char.level < level_req:
+                return (
+                    f"&w{power.get('name','That power')} "
+                    f"requires level &W{level_req}&w.&N"
+                )
             # Charge-based powers bypass time cooldown check
             if power.get("charges_key"):
                 return self._execute_power(power)
@@ -770,6 +819,10 @@ class GameState:
         effect = power.get("effect", "")
         if effect.startswith("maneuver_") or effect == "riposte_arm":
             return self._execute_maneuver(power, char)
+
+        # ── Shield Bash ───────────────────────────────────────────────────
+        if effect == "bash":
+            return self._execute_bash(power, char)
 
         # ── Time-cooldown powers ──────────────────────────────────────────
         now      = time.monotonic()
@@ -924,6 +977,120 @@ class GameState:
             parts.append(f"&wHP: &W{char.hp + getattr(char, 'temp_hp', 0)}&w/&W{char.max_hp}&N")
 
         return "\n".join(p for p in parts if p)
+
+    def _execute_bash(self, power: dict, char) -> str:
+        """
+        Shield Bash — available at level 5, requires shield equipped.
+
+        Timing
+        ──────
+          Cooldown:  2 ticks (8 s) — can be chained rapidly
+          Recovery:  1 tick after a bash where only auto-attacks fire.
+                     Any other power typed during recovery returns a
+                     "lag" message and is silently eaten.
+
+        Size rules
+        ──────────
+          Target must be within 1 size step (Small↔Medium↔Large etc.).
+          Each step the player is LARGER adds +2 to the STR roll modifier.
+          Each step the player is SMALLER subtracts 2.
+
+        STR save contest
+        ────────────────
+          Player:  (d20 + STR_mod + size_mod + int(shield.weight)) × 5
+          Target:  (d20 + STR_mod) × 5
+
+        On success: target → reclined, bash_stun_ticks = 2 (8 s).
+        """
+        import random as _rnd
+        from ..dnd.abilities import char_modifier
+        from ..dnd.classes.fighter import BASH_LEVEL
+        from ..engine.combat import (
+            get_combat_stance, hp_status,
+            bash_size_eligible, bash_size_mod, get_size, SIZES,
+        )
+
+        if char.level < BASH_LEVEL:
+            return f"&wShield Bash unlocks at level &W{BASH_LEVEL}&w.&N"
+
+        if get_combat_stance(char) != "shield":
+            return "&wYou need a shield equipped to bash.&N"
+
+        if self._player not in self.fighting:
+            return "&wYou aren't in combat.&N"
+
+        target = self.fighting.get(self._player)
+        if target is None or target.hp <= 0:
+            return "&wThere is nothing to bash.&N"
+
+        # ── Size eligibility ──────────────────────────────────────────────
+        if not bash_size_eligible(char, target):
+            p_size = get_size(char)
+            t_size = get_size(target)
+            return (
+                f"&w{target.name}&w is too "
+                f"{'large' if SIZES.index(t_size) > SIZES.index(p_size) else 'small'}"
+                f" to bash — you are &W{p_size}&w, they are &W{t_size}&w.&N"
+            )
+
+        # ── Cooldown check ────────────────────────────────────────────────
+        pkey     = "Shield Bash"
+        now      = time.monotonic()
+        ready_at = self._power_cooldowns.get(pkey, 0)
+        if now < ready_at:
+            rem = (ready_at - now) / _TICK_INTERVAL
+            return f"&wShield Bash&w is not ready yet ({rem:.1f} ticks remaining).&N"
+
+        # 2-tick cooldown
+        self._power_cooldowns[pkey] = now + 2 * _TICK_INTERVAL
+
+        # 1-tick recovery — stored on the player's dnd dict
+        dnd = getattr(char, "dnd", {}) or {}
+        dnd["bash_recovery_ticks"] = 1
+
+        # ── Resolve the STR contest ───────────────────────────────────────
+        eq     = getattr(char, "equipment", {})
+        shield = eq.get("secondary_hand")
+        shield_weight = int(getattr(shield, "weight", 0)) if shield else 0
+        sz_mod        = bash_size_mod(char, target)
+
+        str_mod_player = char_modifier(char, "str")
+        str_mod_target = char_modifier(target, "str")
+
+        player_roll = (_rnd.randint(1, 20) + str_mod_player + sz_mod + shield_weight) * 5
+        target_roll = (_rnd.randint(1, 20) + str_mod_target) * 5
+
+        tname = target.name
+
+        # Size advantage hint in the fail message
+        size_note = ""
+        if sz_mod > 0:
+            size_note = f" &x(+{sz_mod} size bonus)&N"
+        elif sz_mod < 0:
+            size_note = f" &x({sz_mod} size penalty)&N"
+
+        if player_roll <= target_roll:
+            p_msg = (
+                f"&wYou slam your shield into &N{tname}&w, "
+                f"but they absorb the blow and hold their ground!&N{size_note}"
+            )
+            r_msg = (
+                f"&w{char.name}&N slams their shield into &w{tname}&N, "
+                f"but {tname} holds their ground!&N"
+            )
+            self._broadcast_to_room(r_msg)
+            return p_msg
+
+        # ── Success ───────────────────────────────────────────────────────
+        target.position        = "reclined"
+        target.bash_stun_ticks = 2
+
+        p_msg = f"&+WYou bash &N{tname}&+W sending it sprawling!&N{size_note}"
+        r_msg = f"&+W{char.name}&N bashes &w{tname}&N sending it sprawling!&N"
+        self._broadcast_to_room(r_msg)
+
+        hp_line = f"{hp_status(char)}   {hp_status(target)}"
+        return f"{p_msg}\n{hp_line}"
 
     def _execute_charge_power(self, power: dict, char, dnd: dict) -> str:
         import random as _random

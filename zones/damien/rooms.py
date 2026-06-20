@@ -222,42 +222,31 @@ ROOMS: dict[int, Room] = {
     13: Room(
         {
             "number":13,
-            "name": "Inside the City Walls",
-            "description":  ("The thick protective wall are hollow, and soldiers stand at attention.",
-                             "You see doors on either side, and you hear the sound of swords clanking. Soldiers must be training."),
-            "indoors": True,
+            "name": "Outer City Main Road",
+            "description":  ("The ground is made of dark bricks. To your right is the military base, and your left there are low income housing."),
+            "indoors": False,
             "terrain": "stone",
             "exits": [
                 {"direction": "west", "roomId": 12},
-                {"direction": "up", "roomId": 14},
             ],
-            "mobs": [
-                M.spawn("vacivus_soldier"),
-                M.spawn("vacivus_soldier"),
-                M.spawn("vacivus_soldier"),
-                M.spawn("vacivus_soldier"),
+            "objects": [
+                O.spawn("shadow_key")
             ],
         }
     ),
     14: Room(
         {
-            "number":14,
-            "name": "On Top of the City Walls",
-            "description":  ("You climb up the ladder and see archers, ready for an attack.",
-                             "The view is breathtaking, and you see the &ggardens&N below you."),
-            "indoors": False,
+            "number":13,
+            "name": "Soldier Break Room",
+            "description":  ("Inside are couches and a bathroom. There is a hospital bed in the corner along with a metal cabinet titled 'Medical supp1ies'",
+                             "This is where the soldiers go when they are wounded on guard duty, or need to rest on breaks and between duties."),
+            "indoors": True,
             "terrain": "stone",
             "exits": [
-                {"direction": "down", "roomId": 13},
+                {"direction": "west", "roomId": 12},
             ],
-            "mobs": [
-                M.spawn("vacivus_archer"),
-                M.spawn("vacivus_archer"),
-                M.spawn("vacivus_archer"),
-                M.spawn("vacivus_archer"),
-            ],
-            "objects": [    
-                O.spawn("shadow_key"),
+            "objects": [
+                O.spawn("shadow_key")
             ],
         }
     ),
